@@ -23,8 +23,8 @@ from datetime import datetime
 l_time = []
 l_pctused = []
 l_outfile = 'exwmpstat.png'
-l_btime = datetime.strptime('01/01/1900 12:01:00 AM', "%m/%d/%Y %I:%M:%S %p")
-l_etime = datetime.strptime('01/01/2020 12:01:00 AM', "%m/%d/%Y %I:%M:%S %p")
+l_btime = datetime.strptime('01/01/1900 00:01:00', "%m/%d/%Y %H:%M:%S")
+l_etime = datetime.strptime('01/01/2020 00:01:00', "%m/%d/%Y %H:%M:%S")
 
 # Check arguments and see if directory exists
 if len(sys.argv) > 1:
@@ -39,7 +39,7 @@ if len(sys.argv) > 1:
             print("End Time has to be > Begin Time")
             sys.exit()
 else:
-    print("Syntax : parsexwmp.py dirname ['mm/dd/yyyy hh24:mi:ss' 'mm/dd/yyyy hh24:mi:ss']")
+    print('Syntax : parsexwmp.py dirname ["mm/dd/yyyy hh24:mi:ss" "mm/dd/yyyy hh24:mi:ss"]')
     sys.exit()
 
 
