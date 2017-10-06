@@ -1,4 +1,4 @@
-# This python script reads exawatcher mpstat output files and graphs cpu usage
+## This python script reads exawatcher mpstat output files and graphs cpu usage
 # It accepts a directory name and reads all files in the dir
 # If you specify a begin and end time, then only the data in that timeframe is graphed
 # Author : Rajeev
