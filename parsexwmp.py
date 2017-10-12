@@ -23,8 +23,8 @@ from datetime import datetime
 l_time = []
 l_pctused = []
 l_outfile = 'exwmpstat.png'
-l_btime = datetime.strptime('01/01/1900 00:01:00', "%m/%d/%Y %H:%M:%S")
-l_etime = datetime.strptime('01/01/2020 00:01:00', "%m/%d/%Y %H:%M:%S")
+begin_time = datetime.strptime('01/01/1900 00:01:00', "%m/%d/%Y %H:%M:%S")
+end_time = datetime.strptime('01/01/2020 00:01:00', "%m/%d/%Y %H:%M:%S")
 
 # Check arguments and see if directory exists
 if len(sys.argv) > 1:
@@ -33,9 +33,9 @@ if len(sys.argv) > 1:
         print("Directory {} Does not Exist".format(l_dirname))
         sys.exit()
     if (len(sys.argv) == 4):
-        l_btime = datetime.strptime(sys.argv[2], "%m/%d/%Y %H:%M:%S")
-        l_etime = datetime.strptime(sys.argv[3], "%m/%d/%Y %H:%M:%S")
-        if (l_etime <= l_btime):
+        begin_time = datetime.strptime(sys.argv[2], "%m/%d/%Y %H:%M:%S")
+        end_time = datetime.strptime(sys.argv[3], "%m/%d/%Y %H:%M:%S")
+        if (end_time <= begin_time):
             print("End Time has to be > Begin Time")
             sys.exit()
 else:
@@ -82,7 +82,7 @@ def process_file(p_fname):
                 l_datetime = datetime.strptime(l_datetime_s, "%m/%d/%Y %H:%M:%S")
 
             # If the time is within the range specified add row to list
-            if (l_datetime >= l_btime and l_datetime <= l_etime):
+            if (l_datetime >= begin_time and l_datetime <= end_time):
                 l_time.append(l_datetime)
                 l_pctused.append(round(100 - float(line[82:88]), 2))
 
@@ -94,6 +94,7 @@ def process_file(p_fname):
 def sorted_ls(path):
     mtime = lambda f: os.stat(os.path.join(path, f)).st_mtime
     return list(sorted(os.listdir(path), key=mtime))
+
 
 
 # The program starts here
