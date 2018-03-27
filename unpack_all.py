@@ -24,9 +24,6 @@ def _extract_file(absolute_file_name, extract_dir):
             zip_ref.extractall(extract_dir)
     except zipfile.BadZipfile:
         logging.error('File {} is corrupted'.format(absolute_file_name))
-    finally:
-        logging.info('Skipping ...')
-        pass
 
 
 def unzip_source_dir(target_dir):
