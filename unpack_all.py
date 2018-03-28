@@ -22,11 +22,14 @@ def _extract_file(absolute_file_name, extract_dir):
     try:
         with zipfile.ZipFile(absolute_file_name, 'r') as zip_ref:
             zip_ref.extractall(extract_dir)
-    except zipfile.BadZipfile:
+    except (zipfile.BadZipfile, OSError):
         logging.error('File {} is corrupted'.format(absolute_file_name))
+        corrupt_file_list.append(absolute_file_name)
 
 
 def unzip_source_dir(target_dir):
+    global corrupt_file_list
+    corrupt_file_list = []
     os.chdir(target_dir)
     logging.info('Extracting all .war, .ear and .jar under {}'.format(target_dir))
     for root, dirs, files in os.walk(target_dir, topdown=True):
@@ -44,7 +47,9 @@ def unzip_source_dir(target_dir):
                 extract_dir = os.path.join(root, os.path.splitext(f)[0]) + '-jar'
                 logging.debug('Found .jar file: {}'.format(absolute_file_name))
                 _extract_file(absolute_file_name, extract_dir)
-
+    logging.info('=== CORRUPTED FILES SUMMARY ===')
+    for badfile in corrupt_file_list:
+        logging.info('BADFILE: {}'.format(badfile))
 
 
 if __name__ == '__main__':
