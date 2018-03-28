@@ -53,7 +53,7 @@ def unzip_source_dir(target_dir):
 
 
 if __name__ == '__main__':
-    logger = logging.getLogger()
+    logger = logging.getLogger('unpack_all')
     logger.setLevel(logging.DEBUG)
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
