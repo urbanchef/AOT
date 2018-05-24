@@ -14,7 +14,7 @@ class OraMetrics():
         self.connection = cx_Oracle.connect(self.user, self.passwd, self._dsn)
 
 
-    def wait_class_stats(self):
+    def wait_class_metrics(self):
         cursor = self.connection.cursor()
         cursor.execute("""
         SELECT inst_info.instance_name,
@@ -55,31 +55,40 @@ class OraMetrics():
             host_name = wait[1]
             wait_name = wait[2]
             wait_value = round(float(wait[3]), 3)
-            print("oracle_wait_class,host=%s,instance_name=%s,wait_class=%s wait_value=%s" % (
-            host_name, instance_name, re.sub(' ', '_', wait_name), wait_value))
+            print("ora_wait_class_metric, host=%s, instance_name=%s, wait_class=%s wait_value=%s" %
+                  (host_name, instance_name, re.sub(' ', '_', wait_name), wait_value))
 
-    def wait_event_stats(self):
+
+    def wait_event_metrics(self):
         cursor = self.connection.cursor()
         cursor.execute("""
-    select
-    n.wait_class wait_class,
-        n.name wait_name,
-        m.wait_count cnt,
-        round(10*m.time_waited/nullif(m.wait_count,0),3) avgms
-    from v$eventmetric m,
-        v$event_name n
-    where m.event_id=n.event_id
-    and n.wait_class <> 'Idle' and m.wait_count > 0 order by 1 
+        SELECT inst_info.instance_name,
+               inst_info.host_name,
+               waitmetrics.wait_class,
+               waitmetrics.wait_name,
+               waitmetrics.cnt,
+               waitmetrics.avgms
+          FROM (SELECT m.inst_id,
+                       n.wait_class wait_class,
+                       n.name wait_name,
+                       m.wait_count cnt,
+                       ROUND (10 * m.time_waited / NULLIF (m.wait_count, 0), 3) avgms
+                  FROM gv$eventmetric m, gv$event_name n
+                 WHERE     m.event_id = n.event_id
+                       AND n.wait_class <> 'Idle'
+                       AND m.wait_count > 0) waitmetrics,
+               (SELECT inst_id, instance_name, host_name FROM gv$instance) inst_info
+         WHERE inst_info.inst_id = waitmetrics.inst_id
     """)
         for wait in cursor:
-            inst_id = wait[0]
-            wait_class = wait[1]
-            wait_name = wait[2]
-            wait_cnt = wait[3]
-            wait_avgms = wait[4]
-            print("oracle_wait_event,host=%s,db=%s,wait_class=%s,wait_event=%s count=%s,latency=%s" % (
-            self.hostname, inst_id, re.sub(' ', '_', wait_class), re.sub(' ', '_', wait_name)
-            , wait_cnt, wait_avgms))
+            instance_name = wait[0]
+            host_name = wait[1]
+            wait_class = wait[2]
+            wait_name = wait[3]
+            wait_cnt = wait[4]
+            wait_avgms = wait[5]
+            print("ora_wait_event_metric, host=%s, instance_name=%s, wait_class=%s, wait_event=%s count=%s, latency=%s" %
+            (host_name, instance_name, re.sub(' ', '_', wait_class), re.sub(' ', '_', wait_name), wait_cnt, wait_avgms))
 
 
 if __name__ == "__main__":
@@ -93,5 +102,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     stats = OraMetrics(args.user, args.passwd, args.hostname, args.service_name, args.port)
-    stats.wait_class_stats()
-    # stats.waitstats()
+    stats.wait_class_metrics()
+    stats.wait_event_metrics()
