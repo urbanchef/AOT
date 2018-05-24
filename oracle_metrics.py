@@ -53,16 +53,16 @@ class OraMetrics():
         for wait in cursor:
             instance_name = wait[0]
             host_name = wait[1]
-            wait_name = wait[2]
+            wait_class_name = wait[2]
             wait_value = round(float(wait[3]), 3)
-            print("ora_wait_class_metric, host=%s, instance_name=%s, wait_class=%s wait_value=%s" %
-                  (host_name, instance_name, re.sub(' ', '_', wait_name), wait_value))
+            print(
+                f"ora_wait_class_metric,host={host_name},instance_name={instance_name},wait_class={re.sub(' ', '_', wait_class_name)} wait_value={wait_value}")
 
 
     def wait_event_metrics(self):
         cursor = self.connection.cursor()
         cursor.execute("""
-        SELECT inst_info.instance_name,
+        SELECT DISTINCT inst_info.instance_name,
                inst_info.host_name,
                waitmetrics.wait_class,
                waitmetrics.wait_name,
@@ -79,6 +79,7 @@ class OraMetrics():
                        AND m.wait_count > 0) waitmetrics,
                (SELECT inst_id, instance_name, host_name FROM gv$instance) inst_info
          WHERE inst_info.inst_id = waitmetrics.inst_id
+         ORDER BY 3
     """)
         for wait in cursor:
             instance_name = wait[0]
@@ -86,9 +87,8 @@ class OraMetrics():
             wait_class = wait[2]
             wait_name = wait[3]
             wait_cnt = wait[4]
-            wait_avgms = wait[5]
-            print("ora_wait_event_metric, host=%s, instance_name=%s, wait_class=%s, wait_event=%s count=%s, latency=%s" %
-            (host_name, instance_name, re.sub(' ', '_', wait_class), re.sub(' ', '_', wait_name), wait_cnt, wait_avgms))
+            wait_latency = float(wait[5])
+            print(f"ora_wait_event_metric,host={host_name},instance_name={instance_name},wait_class={re.sub(' ', '_', wait_class)},wait_event={re.sub(' ', '_', wait_name)} count={wait_cnt},latency={wait_latency}")
 
 
 if __name__ == "__main__":
