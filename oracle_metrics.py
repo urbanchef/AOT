@@ -91,6 +91,25 @@ class OraMetrics():
             print(f"ora_wait_event_metric,host={host_name},instance_name={instance_name},wait_class={re.sub(' ', '_', wait_class)},wait_event={re.sub(' ', '_', wait_name)} count={wait_cnt},latency={wait_latency}")
 
 
+    def sys_metrics(self):
+        cursor = self.connection.cursor()
+        cursor.execute("""
+        SELECT inst_info.instance_name,
+               inst_info.host_name,
+               sysm.metric_name,
+               ROUND (sysm.VALUE, 3) VALUE
+          FROM (SELECT inst_id, instance_name, host_name FROM gv$instance) inst_info,
+               gv$sysmetric sysm
+         WHERE inst_info.inst_id = sysm.inst_id AND sysm.GROUP_ID = 2
+         """)
+        for metric in cursor:
+            instance_name = metric[0]
+            host_name = metric[1]
+            sysmetric_name = metric[2]
+            sysmetric_value = metric[3]
+            print(f"ora_sys_metric,host={host_name},instance_name={instance_name},sysmetric_name={re.sub(' ', '_', sysmetric_name)} sysmetric_value={sysmetric_value}")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(conflict_handler='resolve')
     parser.add_argument('-u', '--user', help="Username", required=True)
@@ -104,3 +123,4 @@ if __name__ == "__main__":
     stats = OraMetrics(args.user, args.passwd, args.hostname, args.service_name, args.port)
     stats.wait_class_metrics()
     stats.wait_event_metrics()
+    stats.sys_metrics()
